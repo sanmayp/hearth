@@ -27,7 +27,12 @@ function parseFront(path) {
 }
 
 function parseState() {
-  const text = readFileSync(join(root, 'factory', 'STATE.md'), 'utf8');
+  let text = '';
+  try {
+    text = readFileSync(join(root, 'factory', 'STATE.md'), 'utf8');
+  } catch {
+    return {};
+  }
   const sections = {};
   let cur = null;
   for (const line of text.split('\n')) {
@@ -43,7 +48,12 @@ function parseState() {
 }
 
 function parseLedger() {
-  const text = readFileSync(join(root, 'factory', 'ledger.jsonl'), 'utf8');
+  let text = '';
+  try {
+    text = readFileSync(join(root, 'factory', 'ledger.jsonl'), 'utf8');
+  } catch {
+    return [];
+  }
   return text
     .split('\n')
     .map((l) => l.trim())

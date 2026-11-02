@@ -47,3 +47,20 @@ runs this mode. Use it in reviews and CI.
 - The reader caps input at 2000 chars and output at 200 tokens.
 - Live calls cost inference on your own Baseten account.
 - The same env pattern fits other partners. See [PARTNERS](PARTNERS.md).
+
+## Heavy batch path
+
+`tools/ai-batch` runs folders of public text with caps and meters.
+Keys stay in env. URLs pass an allow-list. Every call lands in
+`usage.jsonl` with provider, model, tokens, latency, and live
+or mock. Dry-run prints the plan first:
+
+```bash
+scripts/demo-heavy.sh
+scripts/demo-heavy.sh --live --provider=baseten --max-calls=200
+```
+
+Baseten keys start with `b10_` and die after 30 idle days. The
+API answers 429 with retry headers when limits hit; the batch
+tool backs off and retries. Check spend in usage and billing
+before long runs.

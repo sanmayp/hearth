@@ -2,6 +2,7 @@
 //! Probes: `/health/live` and `/health/ready`.
 //! Contract manifest: `/v1/routes`.
 
+use aiusage::AiUsage;
 use app::App;
 use axum::{
     extract::{Extension, State},
@@ -33,6 +34,8 @@ mod cors;
 const ROUTES: &[&str] = &[
     "/health/live",
     "/health/ready",
+    "/v1/ai/results",
+    "/v1/ai/usage",
     "/v1/app/apk",
     "/v1/app/update",
     "/v1/business/invoices",
@@ -97,6 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         redis,
     };
 
+    let aiusage = AiUsage;
     let app = App;
     let business = Business;
     let health = HealthMod;
@@ -107,9 +111,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let inventory = Inventory;
     let watch = Watch;
     let factory = Factory;
-    let all: [&dyn Module; 10] = [
-        &business, &health, &hello, &today, &reminders, &tasks, &inventory, &watch,
-        &factory, &app,
+    let all: [&dyn Module; 11] = [
+        &business, &health, &hello, &today, &reminders, &tasks, &inventory, &watch, &factory, &app,
+        &aiusage,
     ];
     let migs: Vec<(&'static str, Vec<hearth_core::Migration>)> =
         all.iter().map(|m| (m.id(), m.migrations())).collect();

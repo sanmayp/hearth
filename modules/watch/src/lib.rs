@@ -1769,7 +1769,7 @@ mod tests {
         // Long hostnames mask too. Fail closed: a masked host is
         // noise, a leaked key is a breach.
         assert_eq!(
-            redact("see https://example.ts.net:8447/v1 soon"),
+            redact("see https://very-long-hostname-01.example.ts.net:8447/v1 soon"),
             "see https://[redacted]:8447/v1 soon"
         );
         assert_eq!(

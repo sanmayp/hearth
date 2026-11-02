@@ -76,7 +76,12 @@ function liveAgents() {
   }
 }
 
-const builds = JSON.parse(readFileSync(join(root, 'factory', 'builds.json'), 'utf8'));
+let builds = [];
+try {
+  builds = JSON.parse(readFileSync(join(root, 'factory', 'builds.json'), 'utf8'));
+} catch {
+  builds = [];
+}
 
 const status = {
   builds,

@@ -1,0 +1,6 @@
+SYNTHETIC LANE LOG. Fake work only.
+
+Lane atlas: move the reminder card to the new theme.
+Muse opened a branch and split the card into three parts.
+Tests pass: 12 unit, 4 screen. Review waits on design tokens.
+Next: wire the snooze button to the new action.

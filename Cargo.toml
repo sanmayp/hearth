@@ -1,7 +1,7 @@
 # Hearth workspace (Rust backend)
 [workspace]
 resolver = "2"
-members = ["crates/hearth-core", "crates/hearth-server", "crates/agent-bridge", "modules/hello", "modules/today", "modules/reminders", "modules/tasks", "modules/inventory", "modules/health", "modules/business", "modules/watch", "modules/factory", "modules/app"]
+members = ["crates/hearth-core", "crates/hearth-server", "crates/agent-bridge", "modules/hello", "modules/today", "modules/reminders", "modules/tasks", "modules/inventory", "modules/health", "modules/business", "modules/watch", "modules/factory", "modules/app", "modules/aiusage", "tools/ai-batch"]
 
 [workspace.package]
 edition = "2021"

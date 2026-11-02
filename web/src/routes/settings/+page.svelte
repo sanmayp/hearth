@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import AiUsageCard from '$lib/AiUsageCard.svelte';
   import { loadToken, saveToken } from '$lib/api';
   import { loadBridgeKey, saveBridgeKey, loadBridgePort, saveBridgePort } from '$lib/bridge';
   import { loadUpdateState, runUpdateCheck, runUpdateInstall, type UpdateState } from '$lib/update';
@@ -113,6 +114,7 @@
     </div>
     <p class="age">Bridge host matches the server host. Default port is 8449.</p>
   </section>
+  <AiUsageCard />
   <section class="card">
     <h2>App update</h2>
     {#if upd.status === 'available'}

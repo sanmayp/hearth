@@ -30,3 +30,8 @@ assets/higgsfield/src/
 
 # Local scan report. Never commit it.
 SCAN-REPORT.md
+
+# Batch runtime data. Generated, never committed.
+/out/
+SECURITY-REVIEW.md
+web/static/threads-status.json

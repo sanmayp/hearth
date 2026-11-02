@@ -1,0 +1,19 @@
+[package]
+name = "ai-batch"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "ai-batch"
+path = "src/main.rs"
+
+[lib]
+name = "ai_batch"
+path = "src/lib.rs"
+
+[dependencies]
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }

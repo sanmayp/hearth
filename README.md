@@ -48,6 +48,22 @@ Full stack next: set `DATABASE_URL`, `REDIS_URL`, and `HEARTH_TOKEN`,
 then `cargo run -p hearth-server`. Point the web app at it with
 `HEARTH_API=http://127.0.0.1:8080` and `npm run dev` in `web/`.
 
+## AI usage (metered, honest)
+
+`tools/ai-batch` fans public text out to Baseten or Modal with
+concurrency caps, cost caps, retries, and per-call meters. Mock
+runs stay labelled mock and never mix with live numbers.
+
+- Dry-run first (no calls, no spend): `scripts/demo-heavy.sh`
+- Mock batch: `scripts/demo-heavy.sh --mock-run`
+- Live batch: keys in env, then
+  `scripts/demo-heavy.sh --live --provider=baseten --max-calls=200`
+
+Live calls in the last run: 0 (4 mock calls). Full table lives in
+[docs/USAGE-REPORT.md](docs/USAGE-REPORT.md), generated from real
+meter files, never hand-written. The app shows the same numbers
+on Settings and Dev flow.
+
 ## Repo map
 
 - `crates/hearth-server`: API server. All modules mount under `/v1`.

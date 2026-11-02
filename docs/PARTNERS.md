@@ -35,3 +35,21 @@ platforms. This file names each partner and the adapter pattern.
   OpenAI-compatible wire protocol), then point the reader at your URL.
 - Suggested env: `MODAL_MODEL_URL`, plus your endpoint auth.
   Keep mock mode for judges with no key.
+
+## Modal auth shape
+
+- Set up once: `pip install modal`, then `modal setup`.
+- Make a proxy token: `modal workspace proxy-tokens create`.
+- Calls send `Authorization: Bearer <id>.<secret>`.
+- The batch tool reads `MODAL_PROXY_TOKEN_ID`,
+  `MODAL_PROXY_TOKEN_SECRET`, `MODAL_MODEL_URL`, and
+  `MODAL_MODEL` from env. See `modal/README.md` for deploys.
+
+## Which path when
+
+- Shared endpoints bill per token from the first request.
+  Use them for short answers and demos.
+- Dedicated endpoints autoscale with scale-to-zero and bill
+  compute used. Use them for steady agent traffic.
+- Starter plans include monthly free compute for functions
+  and sandboxes. Shared endpoints sit outside it.

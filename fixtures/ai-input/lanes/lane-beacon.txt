@@ -1,0 +1,6 @@
+SYNTHETIC LANE LOG. Fake work only.
+
+Lane beacon: cut overalls p95 under 200 ms.
+Muse added an index and re-ran the slow suite twice.
+Cold path still misses cache on first boot. Flag stays dark.
+Next: warm the cache at startup behind the same flag.

@@ -1,0 +1,12 @@
+# Truss starter for an LLM. Confirmed keys only.
+# Extend per Engine-Builder-LLM docs for large MoE builds:
+# https://docs.baseten.co/engines/engine-builder-llm/overview
+model_name: your-org-your-llm
+model_metadata:
+  description: Hearth reader model. Replace with your deploy.
+requirements:
+  - transformers
+resources:
+  accelerator: L4
+  cpu: "4"
+  memory: 16Gi

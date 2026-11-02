@@ -1,5 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import AiNotes from '$lib/AiNotes.svelte';
+  import AiUsageCard from '$lib/AiUsageCard.svelte';
   import { apiGetOr } from '$lib/api';
   import { bridgeBase, bridgeGet, type BridgeOutput } from '$lib/bridge';
   import { copyText } from '$lib/copy';
@@ -490,6 +492,8 @@
         </li>
       </ul>
     </section>
+    <AiUsageCard />
+    <AiNotes />
   {/if}
 </main>
 

@@ -19,6 +19,7 @@ business = { path = "../../modules/business" }
 watch = { path = "../../modules/watch" }
 factory = { path = "../../modules/factory" }
 app = { path = "../../modules/app" }
+aiusage = { path = "../../modules/aiusage" }
 axum.workspace = true
 tokio.workspace = true
 sqlx.workspace = true
