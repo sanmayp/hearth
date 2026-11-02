@@ -25,9 +25,9 @@ Built with Muse (Meta) for the Meta Global AI Developer Hackathon.
 
 ![Dev flow: agent lanes as a calm constellation](docs/images/dev-flow.png)
 
-## Runs on Baseten and Modal
+## Built for Baseten and Modal
 
-Hearth reads public text through open-weights models served on **Baseten** and **Modal**, partners of the Meta Global AI Developer Hackathon. A mock mode runs with no key. See [docs/BASETEN.md](docs/BASETEN.md) and [docs/PARTNERS.md](docs/PARTNERS.md).
+Hearth is built to read public text through open-weights models served on **Baseten** and **Modal**, partners of the Meta Global AI Developer Hackathon. Mock mode runs with no key and is what this submission demonstrates. A live run needs your own keys (see `scripts/demo-heavy.sh`); no live calls are recorded in this repo yet. See [docs/BASETEN.md](docs/BASETEN.md) and [docs/PARTNERS.md](docs/PARTNERS.md).
 
 ![Architecture: phone, private server, bridge, Baseten and Modal](docs/images/architecture.png)
 
