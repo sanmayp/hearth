@@ -1,0 +1,31 @@
+# Hearth workspace (Rust backend)
+[workspace]
+resolver = "2"
+members = ["crates/hearth-core", "crates/hearth-server", "crates/agent-bridge", "modules/hello", "modules/today", "modules/reminders", "modules/tasks", "modules/inventory", "modules/health", "modules/business", "modules/watch", "modules/factory", "modules/app"]
+
+[workspace.package]
+edition = "2021"
+license = "MIT"
+version = "0.1.0"
+
+[workspace.dependencies]
+axum = { version = "0.7", features = ["ws"] }
+tokio = { version = "1", features = ["full"] }
+tokio-util = { version = "0.7", features = ["io"] }
+sqlx = { version = "0.8", default-features = false, features = ["runtime-tokio", "tls-rustls", "postgres", "uuid", "chrono"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+redis = { version = "0.27", features = ["tokio-comp", "streams"] }
+async-trait = "0.1"
+thiserror = "2"
+opentelemetry = "0.27"
+tower = "0.5"
+tower-http = { version = "0.5", features = ["trace", "cors"] }
+
+[profile.release]
+lto = true
+codegen-units = 1

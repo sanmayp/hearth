@@ -1,0 +1,14 @@
+[Unit]
+Description=Agent bridge for phone control
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/hearth
+ExecStart=%h/hearth/scripts/agent-bridge.sh start
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

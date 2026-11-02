@@ -1,0 +1,17 @@
+[Unit]
+Description=Hearth API server for the phone link
+After=network-online.target postgresql.service redis.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/hearth
+Environment=PORT=8187
+Environment=BIND_ADDR=127.0.0.1
+EnvironmentFile=-%h/.config/hearth/server.env
+ExecStart=%h/hearth/target/release/hearth-server
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

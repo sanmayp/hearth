@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- In-app updates only. Declared here so a regen of the app
+         manifest cannot drop it. Merges into the final manifest. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <application>
+        <receiver
+            android:name="app.hearth.installer.InstallStatusReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="app.hearth.installer.STATUS" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

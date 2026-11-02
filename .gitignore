@@ -1,0 +1,32 @@
+# Hearth (.gitignore)
+# Build outputs are local. Never commit them.
+/target/
+**/target/
+node_modules/
+web/.svelte-kit/
+web/build/
+web/static/factory-status.json
+web/static/builds-status.json
+web/static/needs-you.json
+web/static/features.json
+web/e2e/shots/
+# Local toolchains (workspace install, not system)
+.tooling/
+# Env and secrets (never commit)
+.env
+.env.*
+*.pem
+*.key
+# Editor and OS files
+.vscode/
+.idea/
+.DS_Store
+# Factory run transcripts stay local until merged
+factory/runs/*.json
+!factory/runs/.gitkeep
+
+# Higgsfield source art (large PNG/MP4 originals; compressed copies are committed)
+assets/higgsfield/src/
+
+# Local scan report. Never commit it.
+SCAN-REPORT.md

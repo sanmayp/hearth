@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# lo-key: print the agent bridge key. One line, for the Settings paste.
+# This is the only wrapper that prints a secret, and it prints only the key.
+set -euo pipefail
+TOKEN_FILE="${BRIDGE_HOME:-$HOME/.config/agent-bridge}/token"
+if [ ! -s "$TOKEN_FILE" ]; then
+  echo "No bridge key. Run agent-bridge.sh setup first." >&2
+  exit 1
+fi
+cat "$TOKEN_FILE"

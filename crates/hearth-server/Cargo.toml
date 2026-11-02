@@ -1,0 +1,35 @@
+[package]
+name = "hearth-server"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "hearth-server"
+path = "src/main.rs"
+
+[dependencies]
+hearth-core = { path = "../hearth-core" }
+hello = { path = "../../modules/hello" }
+today = { path = "../../modules/today" }
+reminders = { path = "../../modules/reminders" }
+tasks = { path = "../../modules/tasks" }
+inventory = { path = "../../modules/inventory" }
+health = { path = "../../modules/health" }
+business = { path = "../../modules/business" }
+watch = { path = "../../modules/watch" }
+factory = { path = "../../modules/factory" }
+app = { path = "../../modules/app" }
+axum.workspace = true
+tokio.workspace = true
+sqlx.workspace = true
+redis.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+
+[dev-dependencies]
+testcontainers = "0.22"
+tower = { version = "0.5", features = ["util"] }

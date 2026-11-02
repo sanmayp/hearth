@@ -1,0 +1,12 @@
+{
+  "note": "Fake data for tests. No real user data.",
+  "agenda": [
+    { "id": "a1", "title": "Fake dentist visit", "at": "2026-11-01T09:00:00Z" },
+    { "id": "a2", "title": "Fake call with Sam", "at": "2026-11-01T14:00:00Z" }
+  ],
+  "tasksDue": [
+    { "id": "t1", "title": "Fake: water the plants" },
+    { "id": "t2", "title": "Fake: read 10 pages" }
+  ],
+  "nextAction": { "id": "t1", "why": "Oldest due task." }
+}

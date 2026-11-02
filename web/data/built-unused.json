@@ -1,0 +1,82 @@
+{
+  "_how": "Hand-marked list. Add one row per shipped feature with no recorded use. Fields: id, name, route, shipped_at (YYYY-MM-DD), note. Keep notes short. The prebuild script bakes this file into needs-you.json. Ship dates come from git history. Every row below is unverified: no usage data exists yet, so non-use is unconfirmed.",
+  "features": [
+    {
+      "id": "u-today",
+      "name": "Today",
+      "route": "/",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-reminders",
+      "name": "Reminders",
+      "route": "/reminders",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-tasks",
+      "name": "Tasks",
+      "route": "/tasks",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-health",
+      "name": "Health",
+      "route": "/health",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-items",
+      "name": "Items",
+      "route": "/inventory",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-business",
+      "name": "Business",
+      "route": "/business",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-factory",
+      "name": "Factory",
+      "route": "/factory",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-builds",
+      "name": "Builds",
+      "route": "/builds",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-threads",
+      "name": "Threads",
+      "route": "/threads",
+      "shipped_at": "2026-11-01",
+      "note": "Unverified. No use data on record."
+    },
+    {
+      "id": "u-needs-you",
+      "name": "Needs you",
+      "route": "/needs-you",
+      "shipped_at": "2026-11-01",
+      "note": "Unverified. Ships with this lane."
+    },
+    {
+      "id": "u-settings",
+      "name": "Settings",
+      "route": "/settings",
+      "shipped_at": "2026-10-31",
+      "note": "Unverified. No use data on record."
+    }
+  ]
+}

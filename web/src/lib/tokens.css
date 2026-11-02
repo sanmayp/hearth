@@ -1,0 +1,96 @@
+/* Hearth design tokens (REQ-013). One file owns colour, type, motion. */
+
+:root {
+  /* Colour: dark-first deep ink, one warm accent. */
+  --ink: #14100c;
+  --ink-raise: #1e1712;
+  --paper: #f5efe6;
+  --paper-dim: #e8dfd2;
+  --accent: #e8a04c;
+  --accent-ink: #2a1c08;
+  --ok: #7fb069;
+  --warn: #d98e4a;
+  --bad: #c96a5a;
+
+  /* Module hues (used sparingly). */
+  --hue-today: #e8a04c;
+  --hue-reminders: #7fb3d5;
+  --hue-tasks: #a3b86b;
+  --hue-inventory: #c9a0dc;
+  --hue-business: #6bb8a8;
+  --hue-need: #d5b75f;
+  --hue-health: #e07a7a;
+  --hue-coding: #8a9bb5;
+  --hue-insights: #b5a48a;
+
+  /* Type scale: 6 steps, tabular figures for numbers. */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.25rem;
+  --text-xl: 1.75rem;
+  --text-display: 2.75rem;
+  --font-ui: "Public Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces Variable", Georgia, serif;
+  --nums: tabular-nums;
+
+  /* Motion: 3 durations, 2 easings. */
+  --dur-fast: 120ms;
+  --dur-med: 240ms;
+  --dur-slow: 400ms;
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.4, 1);
+
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --ink: #f5efe6;
+  --ink-raise: #ffffff;
+  --paper: #241b12;
+  --paper-dim: #5a4f41;
+  --accent-ink: #ffffff;
+  color-scheme: light;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-med: 0ms;
+    --dur-slow: 0ms;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--font-ui);
+  font-size: var(--text-md);
+  line-height: 1.5;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.num {
+  font-variant-numeric: var(--nums);
+}
+
+/* Module mast: one box on all pages. Same area, same size, same crop. */
+.mast {
+  display: block;
+  width: 100%;
+  height: 11rem;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 1rem;
+  margin-top: 1rem;
+}

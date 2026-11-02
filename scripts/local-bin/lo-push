@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# lo-push: secret-scan the branch, then push after one y/n.
+# It prints file paths only, never matched content.
+set -euo pipefail
+cd "${LIFEOS_ROOT:-$HOME/hearth}"
+branch="$(git rev-parse --abbrev-ref HEAD)"
+[ "$branch" != "HEAD" ] || {
+  echo "No branch is checked out."
+  exit 1
+}
+if git rev-parse -q --verify main >/dev/null; then
+  base="main"
+elif git fetch -q origin main 2>/dev/null && git rev-parse -q --verify origin/main >/dev/null; then
+  base="origin/main"
+else
+  echo "Cannot find main. Fetch first."
+  exit 1
+fi
+range="$base...$branch"
+# Every file the branch ever touched, not just the final diff.
+# A secret deleted later still ships in history, so it still blocks.
+files="$( { git diff --name-only "$range"; git log --name-only --pretty=format: "$range"; } | grep -v '^$' | sort -u || true)"
+# Forbidden paths: key material and env files must never ship.
+bad_paths="$(printf '%s\n' "$files" | grep -E '\.(pem|key|p12|pfx|jks|keystore|env)$|(^|/)\.env|credentials|secrets|id_rsa' || true)"
+if [ -n "$bad_paths" ]; then
+  echo "Push blocked: forbidden paths:"
+  echo "$bad_paths"
+  exit 1
+fi
+# High-confidence secret shapes in added lines. Paths only, never content.
+patterns='BEGIN[ .-]?(RSA |EC |OPENSSH )?PRIVATE KEY|AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}|xox[baprs]-[A-Za-z0-9-]+|AIza[0-9A-Za-z_-]{20,}'
+hits=""
+while IFS= read -r file; do
+  [ -n "$file" ] || continue
+  if git log -p "$range" -- "$file" | grep '^+' | grep -v '^+++' | grep -qE "$patterns"; then
+    hits="${hits}${file}\n"
+  fi
+done <<EOF
+$files
+EOF
+if [ -n "$hits" ]; then
+  echo "Push blocked: secret patterns in:"
+  printf '%b' "$hits"
+  exit 1
+fi
+count="$(git rev-list --count "$range")"
+printf 'Push %s (%s commits) to origin? [y/n] ' "$branch" "$count"
+read -r ans
+if [ "$ans" = "y" ] || [ "$ans" = "Y" ]; then
+  git push -u origin "$branch"
+  echo "Pushed $branch ($count commits)."
+else
+  echo "Push cancelled."
+fi

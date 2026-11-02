@@ -1,0 +1,14 @@
+[package]
+name = "inventory"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+hearth-core = { path = "../../crates/hearth-core" }
+axum.workspace = true
+tokio.workspace = true
+sqlx.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+uuid.workspace = true
+async-trait.workspace = true

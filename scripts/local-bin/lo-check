@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# lo-check: run the phone-link checks. Prints one green or red line.
+set -euo pipefail
+ROOT="${LIFEOS_ROOT:-$HOME/hearth}"
+TAILNET_API="${TAILNET_API:-https://example.ts.net:8447}"
+green() { printf '\033[32m%s\033[0m\n' "$1"; }
+red() { printf '\033[31m%s\033[0m\n' "$1"; }
+fail() {
+  red "Link FAIL: $1."
+  exit 1
+}
+"$ROOT/scripts/agent-bridge.sh" check >/dev/null 2>&1 || fail "bridge check failed"
+if [ -z "${HEARTH_TOKEN:-}" ]; then
+  ENV_FILE="$HOME/.config/hearth/server.env"
+  if [ -f "$ENV_FILE" ]; then
+    HEARTH_TOKEN="$(grep -E '^HEARTH_TOKEN=' "$ENV_FILE" | head -n 1 | cut -d= -f2- | tr -d ' \t\r' || true)"
+  fi
+fi
+[ -n "${HEARTH_TOKEN:-}" ] || fail "HEARTH_TOKEN is missing"
+code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 -H "Authorization: Bearer $HEARTH_TOKEN" "$TAILNET_API/v1/watch/needs-you" || true)"
+[ "$code" = "200" ] || fail "needs-you got ${code:-none}"
+green "Link OK: bridge, tailnet, origin, data."

@@ -1,0 +1,15 @@
+[Unit]
+Description=Hearth web preview for the phone link
+After=network-online.target hearth-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/hearth/web
+Environment=HEARTH_API=http://127.0.0.1:8187
+ExecStart=/bin/bash -lc 'exec npm run preview -- --port 4180 --strictPort --host 127.0.0.1'
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target

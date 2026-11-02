@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+# lo-restart: restart the phone link (API, preview, bridge) and check it.
+# Prints one line. Fails when any part stays down.
+set -euo pipefail
+systemctl --user restart hearth-server.service hearth-preview.service hearth-bridge.service
+ok=0
+for _ in $(seq 1 30); do
+  ok=1
+  curl -sf -o /dev/null http://127.0.0.1:8187/health/live || ok=0
+  curl -sf -o /dev/null http://127.0.0.1:4180/ || ok=0
+  curl -sf -o /dev/null http://127.0.0.1:8449/health/live || ok=0
+  if [ "$ok" = "1" ]; then
+    break
+  fi
+  sleep 2
+done
+if [ "$ok" = "1" ]; then
+  echo "Link is up: API, preview, bridge answer."
+else
+  echo "Link is down after restart. Check status of each unit."
+  exit 1
+fi

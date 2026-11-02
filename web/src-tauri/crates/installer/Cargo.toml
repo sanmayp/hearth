@@ -1,0 +1,18 @@
+[package]
+name = "tauri-plugin-hearth-installer"
+version = "0.1.0"
+description = "Hearth APK install through Android PackageInstaller sessions"
+edition = "2021"
+links = "tauri-plugin-hearth-installer"
+
+[lib]
+name = "tauri_plugin_hearth_installer"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tauri = { version = "2.12.5", features = [] }
+
+[build-dependencies]
+tauri-plugin = { version = "2", features = ["build"] }
