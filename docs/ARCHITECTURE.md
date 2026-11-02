@@ -3,7 +3,7 @@
 Hearth splits into three parts. The app shows state. The server owns
 state. The bridge reaches terminal agents. Each part runs alone.
 
-![Architecture poster: phone, server, bridge, and model partners](images/architecture.png)
+![Architecture poster: phone, server, bridge, and model endpoint](images/architecture.png)
 
 ## Diagram
 
@@ -15,7 +15,7 @@ flowchart LR
     API --> Mods[Modules\ntoday tasks health ...]
     Mods --> PG[(Postgres\nsystem of record)]
     API --> Cache[(Redis\ncache only)]
-    Reader[Baseten reader\ntools/baseten-reader] --> Models[Baseten / Fireworks / Modal\nMuse Spark Open, Muse Glimmer]
+    Reader[AI batch\ntools/ai-batch] --> Models[Remote model\nOpenAI-compatible]
     API --> Reader
 ```
 
@@ -28,8 +28,8 @@ flowchart LR
   jobs, tools, and widgets. Modules never read each other's tables.
 - Agent bridge: `crates/agent-bridge`. It binds loopback only. It has
   its own token file. It sends text only after preview plus confirm.
-- Reader: `tools/baseten-reader`. It sends public text to a model on
-  Baseten and prints a short summary. Mock mode needs no key.
+- Batch: `tools/ai-batch`. It sends public text to a remote model
+  or a local mock. Mock mode needs no key.
 - Data: Postgres holds records. Redis holds cache and queues only.
 
 ## Request flow

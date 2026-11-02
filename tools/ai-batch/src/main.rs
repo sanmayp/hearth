@@ -3,7 +3,7 @@
 
 use ai_batch::{
     chunk_text, estimate_tokens, generate_report, parse_args, plan_calls, read_input_dir,
-    run_batch, BothMode, Command, Provider, ProviderClient, Task,
+    run_batch, Command, Provider, ProviderClient, Task,
 };
 
 #[tokio::main]
@@ -46,15 +46,14 @@ async fn run(config: ai_batch::Config, dry_run: bool) -> i32 {
         return 1;
     }
     let plan = plan_calls(&chunks, &config);
-    let est_tokens: u64 = chunks.iter().map(|c| estimate_tokens(&c.text)).sum::<u64>()
-        * requests_per_chunk(&config) as u64;
+    let est_tokens: u64 = chunks.iter().map(|c| estimate_tokens(&c.text)).sum();
     if dry_run {
         print_plan(&config, &files, &chunks, &plan, est_tokens);
         return 0;
     }
     let mock_only = config.provider == Provider::Mock;
-    let (baseten, modal) = match build_clients(&config) {
-        Ok(pair) => pair,
+    let remote = match build_client(&config) {
+        Ok(client) => client,
         Err(e) => {
             eprintln!("ai-batch: {e}");
             return 1;
@@ -70,7 +69,7 @@ async fn run(config: ai_batch::Config, dry_run: bool) -> i32 {
             cap_word(config.max_tokens)
         );
     }
-    match run_batch(&config, chunks, baseten, modal).await {
+    match run_batch(&config, chunks, remote).await {
         Ok(summary) => {
             println!(
                 "done: planned={} ran={} ok={} errors={} skipped_cap={} tokens={}+{} capped={}",
@@ -92,15 +91,6 @@ async fn run(config: ai_batch::Config, dry_run: bool) -> i32 {
             eprintln!("ai-batch: {e}");
             2
         }
-    }
-}
-
-/// Requests one chunk spends.
-fn requests_per_chunk(config: &ai_batch::Config) -> usize {
-    if config.provider == Provider::Both && config.both == BothMode::Race {
-        2
-    } else {
-        1
     }
 }
 
@@ -147,9 +137,6 @@ fn print_plan(
         cap_word(config.max_tokens)
     );
     println!("token estimate={est_tokens} (chars/4, input side only)");
-    if config.provider == Provider::Both && config.both == BothMode::Race {
-        println!("warning: race mode spends two requests per chunk");
-    }
     if config.max_calls > 0 && plan.len() as u64 > config.max_calls {
         println!("warning: call cap stops this run early");
     }
@@ -159,46 +146,25 @@ fn print_plan(
     println!("cost: see provider pricing for your model");
 }
 
-/// Build live clients. Fails closed without creds. Mock needs none.
-fn build_clients(
-    config: &ai_batch::Config,
-) -> Result<(Option<ProviderClient>, Option<ProviderClient>), String> {
-    let need_baseten = matches!(config.provider, Provider::Baseten | Provider::Both);
-    let need_modal = matches!(config.provider, Provider::Modal | Provider::Both);
-    let baseten = if need_baseten {
-        let key = config
-            .baseten_key
-            .as_ref()
-            .filter(|k| !k.is_empty())
-            .ok_or("Baseten needs BASETEN_API_KEY")?;
-        let model = config
-            .baseten_model
-            .as_ref()
-            .filter(|m| !m.is_empty())
-            .ok_or("Baseten needs BASETEN_MODEL")?;
-        Some(ProviderClient::baseten(&config.baseten_base, key, model)?)
-    } else {
-        None
-    };
-    let modal = if need_modal {
-        let id = config
-            .modal_id
-            .as_ref()
-            .filter(|k| !k.is_empty())
-            .ok_or("Modal needs MODAL_PROXY_TOKEN_ID plus MODAL_PROXY_TOKEN_SECRET")?;
-        let url = config
-            .modal_url
-            .as_ref()
-            .filter(|u| !u.is_empty())
-            .ok_or("Modal needs MODAL_MODEL_URL")?;
-        let model = config
-            .modal_model
-            .as_ref()
-            .filter(|m| !m.is_empty())
-            .ok_or("Modal needs MODAL_MODEL")?;
-        Some(ProviderClient::modal(url, id, model)?)
-    } else {
-        None
-    };
-    Ok((baseten, modal))
+/// Build the live client. Fails closed without creds. Mock needs none.
+fn build_client(config: &ai_batch::Config) -> Result<Option<ProviderClient>, String> {
+    if config.provider == Provider::Mock {
+        return Ok(None);
+    }
+    let url = config
+        .remote_url
+        .as_ref()
+        .filter(|u| !u.is_empty())
+        .ok_or("Remote needs HEARTH_AI_URL")?;
+    let key = config
+        .remote_key
+        .as_ref()
+        .filter(|k| !k.is_empty())
+        .ok_or("Remote needs HEARTH_AI_KEY")?;
+    let model = config
+        .remote_model
+        .as_ref()
+        .filter(|m| !m.is_empty())
+        .ok_or("Remote needs HEARTH_AI_MODEL")?;
+    Ok(Some(ProviderClient::remote(url, key, model)?))
 }

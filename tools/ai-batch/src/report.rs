@@ -134,8 +134,8 @@ mod tests {
         let usage = dir.join("usage.jsonl");
         std::fs::write(
             &usage,
-            r#"{"provider":"baseten","tokens_in":10,"tokens_out":5,"latency_ms":100,"status":"ok","mock":false}
-{"provider":"baseten","tokens_in":10,"tokens_out":5,"latency_ms":300,"status":"ok","mock":false}
+            r#"{"provider":"remote","tokens_in":10,"tokens_out":5,"latency_ms":100,"status":"ok","mock":false}
+{"provider":"remote","tokens_in":10,"tokens_out":5,"latency_ms":300,"status":"ok","mock":false}
 {"provider":"mock","tokens_in":4,"tokens_out":0,"latency_ms":1,"status":"ok","mock":true}
 not-json
 "#,
@@ -144,7 +144,7 @@ not-json
         let out = dir.join("USAGE-REPORT.md");
         generate_report(&usage, &out).unwrap();
         let text = std::fs::read_to_string(&out).unwrap();
-        assert!(text.contains("| baseten | 2 | 2 | 0 | 20 | 10 | 100 | 300 | 0 |"));
+        assert!(text.contains("| remote | 2 | 2 | 0 | 20 | 10 | 100 | 300 | 0 |"));
         assert!(text.contains("| mock | 1 | 0 | 1 | 4 | 0 | 1 | 1 | 0 |"));
         assert!(text.contains("Live calls in the last run: 2."));
         assert!(text.contains("Skipped 1 bad lines."));

@@ -246,7 +246,7 @@ mod tests {
     fn sample() -> Vec<UsageRow> {
         vec![
             UsageRow {
-                provider: "baseten".into(),
+                provider: "remote".into(),
                 tokens_in: 10,
                 tokens_out: 5,
                 latency_ms: 100,
@@ -254,7 +254,7 @@ mod tests {
                 mock: false,
             },
             UsageRow {
-                provider: "baseten".into(),
+                provider: "remote".into(),
                 tokens_in: 10,
                 tokens_out: 5,
                 latency_ms: 300,
@@ -270,7 +270,7 @@ mod tests {
                 mock: true,
             },
             UsageRow {
-                provider: "modal".into(),
+                provider: "remote".into(),
                 tokens_in: 0,
                 tokens_out: 0,
                 latency_ms: 50,
@@ -283,18 +283,16 @@ mod tests {
     #[test]
     fn totals_split_live_mock_and_percentiles() {
         let totals = summarize(&sample());
-        let baseten = &totals["baseten"];
-        assert_eq!(baseten.calls, 2);
-        assert_eq!(baseten.live, 2);
-        assert_eq!(baseten.mock, 0);
-        assert_eq!(baseten.tokens_in, 20);
-        assert_eq!(baseten.p50_ms, 100);
-        assert_eq!(baseten.p95_ms, 300);
+        let remote = &totals["remote"];
+        assert_eq!(remote.calls, 3);
+        assert_eq!(remote.live, 3);
+        assert_eq!(remote.mock, 0);
+        assert_eq!(remote.tokens_in, 20);
+        assert_eq!(remote.p50_ms, 100);
+        assert_eq!(remote.p95_ms, 300);
+        assert_eq!(remote.errors, 1);
         let mock = &totals["mock"];
         assert_eq!((mock.live, mock.mock), (0, 1));
-        let modal = &totals["modal"];
-        assert_eq!(modal.errors, 1);
-        assert_eq!(modal.p50_ms, 0);
     }
 
     #[test]

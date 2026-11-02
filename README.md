@@ -8,9 +8,8 @@ Built with Muse (Meta) for the Meta Global AI Developer Hackathon.
 
 ## Built with
 
-- Meta: Muse Spark and Muse Code, Meta Model API, open-weights Muse Spark Open and Muse Glimmer.
-- Baseten, Fireworks AI, and Modal: hackathon inference partners for Meta open-weights models.
-- See [docs/PARTNERS.md](docs/PARTNERS.md). The Baseten worked example lives in [docs/BASETEN.md](docs/BASETEN.md).
+- Muse (Meta): the developer of this repo.
+- Built for the Meta Global AI Developer Hackathon.
 
 ## What it does
 
@@ -25,11 +24,13 @@ Built with Muse (Meta) for the Meta Global AI Developer Hackathon.
 
 ![Dev flow: agent lanes as a calm constellation](docs/images/dev-flow.png)
 
-## Built for Baseten and Modal
+## AI batch (mock mode)
 
-Hearth is built to read public text through open-weights models served on **Baseten** and **Modal**, partners of the Meta Global AI Developer Hackathon. Mock mode runs with no key and is what this submission demonstrates. A live run needs your own keys (see `scripts/demo-heavy.sh`); no live calls are recorded in this repo yet. See [docs/BASETEN.md](docs/BASETEN.md) and [docs/PARTNERS.md](docs/PARTNERS.md).
+Hearth reads public text through `tools/ai-batch`. Mock mode runs
+with no key and is what this submission demonstrates. No live calls
+are recorded in this repo.
 
-![Architecture: phone, private server, bridge, Baseten and Modal](docs/images/architecture.png)
+![Architecture: phone, private server, bridge, model endpoint](docs/images/architecture.png)
 
 ## 5-minute quickstart
 
@@ -42,7 +43,7 @@ scripts/demo.sh
 ```
 
 The demo prints the route manifest, shows the bridge refusing to start
-without its token file, and runs the Baseten reader in mock mode.
+without its token file, and runs the AI batch in mock mode.
 
 Full stack next: set `DATABASE_URL`, `REDIS_URL`, and `HEARTH_TOKEN`,
 then `cargo run -p hearth-server`. Point the web app at it with
@@ -50,16 +51,19 @@ then `cargo run -p hearth-server`. Point the web app at it with
 
 ## AI usage (metered, honest)
 
-`tools/ai-batch` fans public text out to Baseten or Modal with
-concurrency caps, cost caps, retries, and per-call meters. Mock
-runs stay labelled mock and never mix with live numbers.
+`tools/ai-batch` fans public text out to a remote model or a local
+mock, with concurrency caps, cost caps, retries, and per-call
+meters. Mock runs stay labelled mock and never mix with live
+numbers.
 
-- Dry-run first (no calls, no spend): `scripts/demo-heavy.sh`
-- Mock batch: `scripts/demo-heavy.sh --mock-run`
-- Live batch: keys in env, then
-  `scripts/demo-heavy.sh --live --provider=baseten --max-calls=200`
+- Mock batch (no key, no network): `scripts/demo.sh` runs it as
+  step 3, or `cargo run -q -p ai-batch -- run --provider=mock`.
+- Remote batch: set `HEARTH_AI_URL`, `HEARTH_AI_KEY`, and
+  `HEARTH_AI_MODEL`, then
+  `cargo run -q -p ai-batch -- run --provider=remote --max-calls=200`.
+- Dry-run first (no calls, no spend): add `--dry-run`.
 
-Live calls in the last run: 0 (4 mock calls). Full table lives in
+The last report (4 mock calls, 0 live) lives in
 [docs/USAGE-REPORT.md](docs/USAGE-REPORT.md), generated from real
 meter files, never hand-written. The app shows the same numbers
 on Settings and Dev flow.
@@ -70,16 +74,14 @@ on Settings and Dev flow.
 - `crates/agent-bridge`: phone-to-terminal bridge. Loopback only.
 - `modules/`: one domain per crate. Each owns its routes and migrations.
 - `web/`: SvelteKit app plus Tauri shell for phone and desktop.
-- `tools/baseten-reader`: optional model reader. Mock mode needs no key.
-- `docs/`: architecture, bridge, dev flow, Baseten, partners, security.
+- `tools/ai-batch`: batch runner. Mock mode needs no key.
+- `docs/`: architecture, bridge, dev flow, security.
 
 ## Docs
 
 - [ARCHITECTURE](docs/ARCHITECTURE.md) — parts and data flow.
 - [BRIDGE](docs/BRIDGE.md) — agent bridge safeguards.
 - [DEV-FLOW](docs/DEV-FLOW.md) — how lanes ship.
-- [BASETEN](docs/BASETEN.md) — run a model on Baseten.
-- [PARTNERS](docs/PARTNERS.md) — Fireworks and Modal notes.
 - [SECURITY](docs/SECURITY.md) — keys and safe setup.
 - [ASD-STE100](docs/ASD-STE100.md) — the writing standard.
 

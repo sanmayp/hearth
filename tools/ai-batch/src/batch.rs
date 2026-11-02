@@ -2,7 +2,7 @@
 //! It writes results plus usage. Text never reaches usage rows.
 
 use crate::chunk::Chunk;
-use crate::config::{BothMode, Config, Provider, Task};
+use crate::config::{Config, Provider, Task};
 use crate::provider::{CallResult, CallStatus, ProviderClient};
 use serde::Serialize;
 use std::sync::Arc;
@@ -112,31 +112,13 @@ fn now_ms() -> u64 {
         .as_millis() as u64
 }
 
-/// Build the call plan. Split alternates, race doubles.
+/// Build the call plan. One call per chunk.
 pub fn plan_calls(chunks: &[Chunk], cfg: &Config) -> Vec<PlannedCall> {
-    let mut plan = vec![];
-    for (i, chunk) in chunks.iter().enumerate() {
-        match cfg.provider {
-            Provider::Baseten => plan.push(one(chunk, "baseten")),
-            Provider::Modal => plan.push(one(chunk, "modal")),
-            Provider::Mock => plan.push(one(chunk, "mock")),
-            Provider::Both => match cfg.both {
-                BothMode::Split => {
-                    let label = if i.is_multiple_of(2) {
-                        "baseten"
-                    } else {
-                        "modal"
-                    };
-                    plan.push(one(chunk, label));
-                }
-                BothMode::Race => {
-                    plan.push(one(chunk, "baseten"));
-                    plan.push(one(chunk, "modal"));
-                }
-            },
-        }
-    }
-    plan
+    let label = match cfg.provider {
+        Provider::Remote => "remote",
+        Provider::Mock => "mock",
+    };
+    chunks.iter().map(|chunk| one(chunk, label)).collect()
 }
 
 /// One planned call.
@@ -151,8 +133,7 @@ fn one(chunk: &Chunk, provider: &'static str) -> PlannedCall {
 pub async fn run_batch(
     cfg: &Config,
     chunks: Vec<Chunk>,
-    baseten: Option<ProviderClient>,
-    modal: Option<ProviderClient>,
+    remote: Option<ProviderClient>,
 ) -> Result<BatchSummary, String> {
     std::fs::create_dir_all(&cfg.out).map_err(|e| format!("Out dir is bad: {e}"))?;
     let results_path = cfg.out.join("results.jsonl");
@@ -164,16 +145,15 @@ pub async fn run_batch(
     let sem = Arc::new(Semaphore::new(cfg.concurrency));
     let budget = Arc::new(std::sync::Mutex::new(Budget::default()));
     let mut handles = vec![];
-    for (i, chunk) in chunks.into_iter().enumerate() {
-        let requests = requests_per_chunk(cfg);
-        let est = crate::chunk::estimate_tokens(&chunk.text) * requests as u64;
-        if !admit(cfg, &budget, requests as u64, est) {
+    for chunk in chunks.into_iter() {
+        let est = crate::chunk::estimate_tokens(&chunk.text);
+        if !admit(cfg, &budget, 1, est) {
             summary.capped = true;
             summary.skipped_cap += 1;
             continue;
         }
         let permit = sem.clone().acquire_owned().await.unwrap();
-        let job = dispatch_job(cfg, i, chunk, &baseten, &modal)?;
+        let job = dispatch_job(cfg, chunk, &remote)?;
         let budget = budget.clone();
         handles.push(tokio::spawn(async move {
             let _permit = permit;
@@ -256,15 +236,6 @@ struct Budget {
     tokens: u64,
 }
 
-/// Requests one chunk spends. Race spends two.
-fn requests_per_chunk(cfg: &Config) -> usize {
-    if cfg.provider == Provider::Both && cfg.both == BothMode::Race {
-        2
-    } else {
-        1
-    }
-}
-
 /// Admit one chunk. Reserves budget. False stops the run.
 /// Zero caps mean uncapped.
 fn admit(cfg: &Config, budget: &Arc<std::sync::Mutex<Budget>>, requests: u64, est: u64) -> bool {
@@ -287,100 +258,41 @@ fn settle(budget: &Arc<std::sync::Mutex<Budget>>, est: u64, rows: &[(Chunk, Call
     budget.tokens = budget.tokens.saturating_sub(est).saturating_add(actual);
 }
 
-/// One dispatch unit. Race holds two clients.
+/// One dispatch unit. One chunk, one client.
 struct Job {
     /// Chunk to send.
     chunk: Chunk,
     /// Task prompt.
     task: Task,
-    /// Clients to call. Race calls both.
-    clients: Vec<ProviderClient>,
-    /// True for race mode.
-    race: bool,
+    /// Client to call.
+    client: ProviderClient,
 }
 
 impl Job {
-    /// Run the job. Race keeps the first win, records both.
+    /// Run the job. One call, one row.
     async fn run(self) -> Vec<(Chunk, CallResult)> {
-        if !self.race {
-            let result = self.clients[0].call(self.task, &self.chunk.text).await;
-            return vec![(self.chunk, result)];
-        }
-        let (a, b) = tokio::join!(
-            self.clients[0].call(self.task, &self.chunk.text),
-            self.clients[1].call(self.task, &self.chunk.text)
-        );
-        let mut rows = vec![];
-        let a_wins = a.status == CallStatus::Ok;
-        let (winner, mut loser) = if a_wins { (a, b) } else { (b, a) };
-        if winner.status == CallStatus::Ok {
-            loser.status = CallStatus::Lost;
-        }
-        rows.push((self.chunk.clone(), winner));
-        rows.push((self.chunk, loser));
-        rows
+        let result = self.client.call(self.task, &self.chunk.text).await;
+        vec![(self.chunk, result)]
     }
 }
 
 /// Build one job from the plan. Fails closed on missing clients.
 fn dispatch_job(
     cfg: &Config,
-    i: usize,
     chunk: Chunk,
-    baseten: &Option<ProviderClient>,
-    modal: &Option<ProviderClient>,
+    remote: &Option<ProviderClient>,
 ) -> Result<Job, String> {
-    let mock = ProviderClient::mock();
-    let pick = |label: &str| -> Result<ProviderClient, String> {
-        match label {
-            "baseten" => baseten
-                .clone()
-                .ok_or("Baseten client is missing".to_string()),
-            "modal" => modal.clone().ok_or("Modal client is missing".to_string()),
-            _ => Ok(mock.clone()),
-        }
+    let client = match cfg.provider {
+        Provider::Remote => remote
+            .clone()
+            .ok_or("Remote client is missing".to_string())?,
+        Provider::Mock => ProviderClient::mock(),
     };
-    match cfg.provider {
-        Provider::Baseten => Ok(Job {
-            chunk,
-            task: cfg.task,
-            clients: vec![pick("baseten")?],
-            race: false,
-        }),
-        Provider::Modal => Ok(Job {
-            chunk,
-            task: cfg.task,
-            clients: vec![pick("modal")?],
-            race: false,
-        }),
-        Provider::Mock => Ok(Job {
-            chunk,
-            task: cfg.task,
-            clients: vec![mock],
-            race: false,
-        }),
-        Provider::Both => match cfg.both {
-            BothMode::Split => {
-                let label = if i.is_multiple_of(2) {
-                    "baseten"
-                } else {
-                    "modal"
-                };
-                Ok(Job {
-                    chunk,
-                    task: cfg.task,
-                    clients: vec![pick(label)?],
-                    race: false,
-                })
-            }
-            BothMode::Race => Ok(Job {
-                chunk,
-                task: cfg.task,
-                clients: vec![pick("baseten")?, pick("modal")?],
-                race: true,
-            }),
-        },
-    }
+    Ok(Job {
+        chunk,
+        task: cfg.task,
+        client,
+    })
 }
 
 #[cfg(test)]
@@ -392,18 +304,14 @@ mod tests {
         Config {
             input: "fixtures/ai-input".into(),
             provider: Provider::Mock,
-            both: BothMode::Split,
             task: Task::Summary,
             concurrency: 4,
             max_calls: 0,
             max_tokens: 0,
             out: std::env::temp_dir(),
-            baseten_key: None,
-            baseten_model: None,
-            baseten_base: "https://inference.baseten.co/v1".to_string(),
-            modal_id: None,
-            modal_url: None,
-            modal_model: None,
+            remote_url: None,
+            remote_key: None,
+            remote_model: None,
         }
     }
 
@@ -420,17 +328,16 @@ mod tests {
     }
 
     #[test]
-    fn plan_splits_and_races() {
+    fn plan_labels_one_call_per_chunk() {
         let mut cfg = test_config();
-        cfg.provider = Provider::Both;
-        cfg.both = BothMode::Split;
+        cfg.provider = Provider::Remote;
         let plan = plan_calls(&test_chunks(4), &cfg);
         assert_eq!(plan.len(), 4);
-        assert_eq!(plan[0].provider, "baseten");
-        assert_eq!(plan[1].provider, "modal");
-        cfg.both = BothMode::Race;
+        assert!(plan.iter().all(|p| p.provider == "remote"));
+        cfg.provider = Provider::Mock;
         let plan = plan_calls(&test_chunks(4), &cfg);
-        assert_eq!(plan.len(), 8);
+        assert_eq!(plan.len(), 4);
+        assert!(plan.iter().all(|p| p.provider == "mock"));
     }
 
     #[tokio::test]
@@ -438,7 +345,7 @@ mod tests {
         let mut cfg = test_config();
         cfg.max_calls = 3;
         cfg.out = std::env::temp_dir().join(format!("aib-cap-{}", std::process::id()));
-        let summary = run_batch(&cfg, test_chunks(10), None, None).await.unwrap();
+        let summary = run_batch(&cfg, test_chunks(10), None).await.unwrap();
         assert_eq!(summary.ran, 3);
         assert!(summary.capped);
         assert_eq!(summary.skipped_cap, 7);
@@ -450,7 +357,7 @@ mod tests {
         let mut cfg = test_config();
         cfg.concurrency = 1;
         cfg.out = std::env::temp_dir().join(format!("aib-ser-{}", std::process::id()));
-        let summary = run_batch(&cfg, test_chunks(5), None, None).await.unwrap();
+        let summary = run_batch(&cfg, test_chunks(5), None).await.unwrap();
         assert_eq!(summary.ran, 5);
         assert_eq!(summary.ok, 5);
         assert!(!summary.capped);
@@ -461,7 +368,7 @@ mod tests {
     async fn usage_schema_holds_no_text_or_keys() {
         let mut cfg = test_config();
         cfg.out = std::env::temp_dir().join(format!("aib-sch-{}", std::process::id()));
-        run_batch(&cfg, test_chunks(1), None, None).await.unwrap();
+        run_batch(&cfg, test_chunks(1), None).await.unwrap();
         let usage = std::fs::read_to_string(cfg.out.join("usage.jsonl")).unwrap();
         let mut keys: Vec<String> = vec![];
         for line in usage.lines() {
@@ -493,7 +400,7 @@ mod tests {
     async fn mock_rows_stay_labelled() {
         let mut cfg = test_config();
         cfg.out = std::env::temp_dir().join(format!("aib-mock-{}", std::process::id()));
-        let summary = run_batch(&cfg, test_chunks(2), None, None).await.unwrap();
+        let summary = run_batch(&cfg, test_chunks(2), None).await.unwrap();
         assert_eq!(summary.ok, 2);
         let usage = std::fs::read_to_string(cfg.out.join("usage.jsonl")).unwrap();
         for line in usage.lines() {

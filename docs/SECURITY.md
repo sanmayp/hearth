@@ -8,7 +8,7 @@ or personal contacts ship here. Demo data is fake and says so.
 - `HEARTH_TOKEN`: API key for `/v1`. Set it in env at deploy.
 - Bridge token: a file with mode 600. Made by
   `scripts/agent-bridge.sh setup`. Never commit it.
-- `BASETEN_API_KEY`: only for live model calls. See [BASETEN](BASETEN.md).
+- `HEARTH_AI_KEY`: only for live model calls. Never commit it.
 - Signing keys for app updates: make them with `keytool` and
   `openssl` on your own host. Keep them off git.
 

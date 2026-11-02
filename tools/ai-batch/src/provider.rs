@@ -1,5 +1,5 @@
 //! Provider. It calls one endpoint per chunk.
-//! Keys ride headers only. URLs pass the allow-list first.
+//! Keys ride headers only. URLs pass validation first.
 
 use crate::config::{validate_url, Provider, Task};
 use serde::{Deserialize, Serialize};
@@ -12,8 +12,6 @@ pub enum CallStatus {
     Ok,
     /// Transport, HTTP, or parse failure.
     Error,
-    /// Race loser. Recorded, never shown as the answer.
-    Lost,
 }
 
 /// One call result. It holds no keys and no prompts.
@@ -69,37 +67,19 @@ impl std::fmt::Debug for ProviderClient {
 }
 
 impl ProviderClient {
-    /// Build a Baseten client. Fails closed without key or model.
-    pub fn baseten(base: &str, key: &str, model: &str) -> Result<Self, String> {
+    /// Build a remote client. Fails closed without key or model.
+    pub fn remote(base: &str, key: &str, model: &str) -> Result<Self, String> {
         let base_url = validate_url(base)?;
         if key.is_empty() {
-            return Err("Baseten key is empty".to_string());
+            return Err("Remote key is empty".to_string());
         }
         if model.is_empty() {
-            return Err("Baseten model is empty".to_string());
+            return Err("Remote model is empty".to_string());
         }
         Ok(Self {
-            provider: Provider::Baseten,
+            provider: Provider::Remote,
             base_url: Some(base_url),
             key: Some(key.to_string()),
-            model: model.to_string(),
-            http: Some(client()),
-        })
-    }
-
-    /// Build a Modal client. URL comes from the owner dashboard.
-    pub fn modal(url: &str, id_secret: &str, model: &str) -> Result<Self, String> {
-        let base_url = validate_url(url)?;
-        if id_secret.is_empty() || !id_secret.contains('.') {
-            return Err("Modal proxy token is bad".to_string());
-        }
-        if model.is_empty() {
-            return Err("Modal model is empty".to_string());
-        }
-        Ok(Self {
-            provider: Provider::Modal,
-            base_url: Some(base_url),
-            key: Some(id_secret.to_string()),
             model: model.to_string(),
             http: Some(client()),
         })
@@ -119,10 +99,8 @@ impl ProviderClient {
     /// Provider label for rows.
     pub fn label(&self) -> &'static str {
         match self.provider {
-            Provider::Baseten => "baseten",
-            Provider::Modal => "modal",
+            Provider::Remote => "remote",
             Provider::Mock => "mock",
-            Provider::Both => "both",
         }
     }
 
@@ -335,8 +313,7 @@ mod tests {
 
     #[test]
     fn debug_hides_keys() {
-        let client =
-            ProviderClient::baseten("https://inference.baseten.co/v1", "livekey9", "m").unwrap();
+        let client = ProviderClient::remote("https://ai.example.com/v1", "livekey9", "m").unwrap();
         let shown = format!("{client:?}");
         assert!(!shown.contains("livekey9"));
         assert!(shown.contains("[redacted]"));
@@ -344,11 +321,10 @@ mod tests {
 
     #[test]
     fn clients_fail_closed_without_creds() {
-        assert!(ProviderClient::baseten("https://inference.baseten.co/v1", "", "m").is_err());
-        assert!(ProviderClient::baseten("https://evil.example/v1", "k", "m").is_err());
-        assert!(ProviderClient::modal("https://x.modal.run", "noperiod", "m").is_err());
-        assert!(ProviderClient::modal("https://x.modal.run", "id.secret", "").is_err());
-        assert!(ProviderClient::baseten("https://inference.baseten.co/v1", "k", "m").is_ok());
+        assert!(ProviderClient::remote("https://ai.example.com/v1", "", "m").is_err());
+        assert!(ProviderClient::remote("https://ai.example.com/v1", "k", "").is_err());
+        assert!(ProviderClient::remote("http://ai.example.com/v1", "k", "m").is_err());
+        assert!(ProviderClient::remote("https://ai.example.com/v1", "k", "m").is_ok());
     }
 
     #[tokio::test]
