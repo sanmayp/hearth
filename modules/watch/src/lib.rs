@@ -809,7 +809,7 @@ pub struct FeatureStepPost {
     pub done: Option<bool>,
 }
 
-/// Features ledger path. Env wins, else the omarchy default.
+/// Features ledger path. Env wins, else the default.
 fn features_path() -> PathBuf {
     if let Ok(p) = std::env::var("FEATURES_LEDGER") {
         return PathBuf::from(p);

@@ -1,38 +1,39 @@
 # Hearth
 
-Hearth is a calm center for life, health, and AI agents. It runs on your own hardware. It speaks in short plain sentences. It never sends a secret anywhere.
+Hearth is a control room for coding agents. It shows which agent windows really work. It shows which ones are stuck. It shows which ones wait for you.
 
 Built with Muse (Meta) for the Meta Global AI Developer Hackathon.
 
 ![Hearth hero: a phone with a calm amber ring on dark glass](docs/images/hero.png)
 
-## Built with
+## What it is
 
-- Muse (Meta): the developer of this repo.
-- Built for the Meta Global AI Developer Hackathon.
+Hearth is one board for work and life. It lists coding agents across computers and projects. It holds tasks, reminders, and notes too.
 
-## What it does
+## Why
 
-- Home: one ring shows the day. One card names the next step.
-- Dev flow: watch coding agents across panes, lanes, and commits.
-- Needs You: approvals and questions surface in one list.
-- Agent bridge: read and message terminal agents from the phone. Preview plus confirm. Full audit.
-- Feature tracker: every feature carries status, proof, and links.
-- Self-update: signed over-the-air app updates with rollback.
-- Plain text: all UI copy follows ASD-STE100 rules. See [docs/ASD-STE100.md](docs/ASD-STE100.md).
-- Meta glasses companion: planned. Glanceable cards, voice-first answers.
+One developer now runs many agents at once. They work on many projects and many computers. They fix bugs and add features at the same time. No one can track all that in memory. Agents give no board unless you read files or code. Hearth gives the board.
+
+## Features
+
+- Live list of agent windows across computers and projects.
+- Truth check: working now, stuck, or waiting for you.
+- Stuck reasons name billing and API errors.
+- Needs-you list for approvals and questions.
+- Approve or stop from the phone.
+- Preview plus one-use code plus audit on every send.
+- Voice commands from the phone, read-only by default.
+- Tasks, reminders, and notes in the same place.
 
 ![Dev flow: agent lanes as a calm constellation](docs/images/dev-flow.png)
 
-## AI batch (mock mode)
+## How it works
 
-Hearth reads public text through `tools/ai-batch`. Mock mode runs
-with no key and is what this submission demonstrates. No live calls
-are recorded in this repo.
+The bridge reads terminal panes on each computer. It derives state from output signs. It never pastes screen text. The server merges panes into one feed. The phone app renders the board. Voice reads the board aloud. Writes need preview plus code. Details live in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ![Architecture: phone, private server, bridge, model endpoint](docs/images/architecture.png)
 
-## 5-minute quickstart
+## Run it
 
 Prereqs: Rust stable, Node 22. No keys needed for the demo.
 
@@ -42,53 +43,24 @@ cd hearth
 scripts/demo.sh
 ```
 
-The demo prints the route manifest, shows the bridge refusing to start
-without its token file, and runs the AI batch in mock mode.
+Full stack next: `make test`, then `cargo run -p hearth-server`. Then run `make ui-dev` for the phone UI.
 
-Full stack next: set `DATABASE_URL`, `REDIS_URL`, and `HEARTH_TOKEN`,
-then `cargo run -p hearth-server`. Point the web app at it with
-`HEARTH_API=http://127.0.0.1:8080` and `npm run dev` in `web/`.
+## Built with Muse
 
-## AI usage (metered, honest)
+Muse windows wrote the code. Claude reviewed it. Limits stay plain:
 
-`tools/ai-batch` fans public text out to a remote model or a local
-mock, with concurrency caps, cost caps, retries, and per-call
-meters. Mock runs stay labelled mock and never mix with live
-numbers.
+- Glasses speech is unverified on real hardware.
+- Remote-host send stays OFF by default.
+- AI batch runs in mock mode. No live calls ship in this repo.
 
-- Mock batch (no key, no network): `scripts/demo.sh` runs it as
-  step 3, or `cargo run -q -p ai-batch -- run --provider=mock`.
-- Remote batch: set `HEARTH_AI_URL`, `HEARTH_AI_KEY`, and
-  `HEARTH_AI_MODEL`, then
-  `cargo run -q -p ai-batch -- run --provider=remote --max-calls=200`.
-- Dry-run first (no calls, no spend): add `--dry-run`.
+## Safety
 
-The last report (4 mock calls, 0 live) lives in
-[docs/USAGE-REPORT.md](docs/USAGE-REPORT.md), generated from real
-meter files, never hand-written. The app shows the same numbers
-on Settings and Dev flow.
+This repo holds no secrets. Voice is read-only by default. Writes need preview plus a one-use code. Every send lands in the audit log. Read [docs/SECURITY.md](docs/SECURITY.md) first.
 
-## Repo map
+## Status
 
-- `crates/hearth-server`: API server. All modules mount under `/v1`.
-- `crates/agent-bridge`: phone-to-terminal bridge. Loopback only.
-- `modules/`: one domain per crate. Each owns its routes and migrations.
-- `web/`: SvelteKit app plus Tauri shell for phone and desktop.
-- `tools/ai-batch`: batch runner. Mock mode needs no key.
-- `docs/`: architecture, bridge, dev flow, security.
-
-## Docs
-
-- [ARCHITECTURE](docs/ARCHITECTURE.md) — parts and data flow.
-- [BRIDGE](docs/BRIDGE.md) — agent bridge safeguards.
-- [DEV-FLOW](docs/DEV-FLOW.md) — how lanes ship.
-- [SECURITY](docs/SECURITY.md) — keys and safe setup.
-- [ASD-STE100](docs/ASD-STE100.md) — the writing standard.
-
-## Security
-
-This repo holds no secrets. Set your own keys at deploy.
-Read [docs/SECURITY.md](docs/SECURITY.md) first.
+Done: board, truth check, Needs-you list, approve and stop from the phone, voice commands, tasks and reminders.
+Planned: Meta glasses audio on real hardware, live AI batch runs.
 
 ## License
 
