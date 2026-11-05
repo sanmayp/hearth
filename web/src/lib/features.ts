@@ -378,14 +378,14 @@ export const demoFeatures: FeaturesLedger = {
       area: 'LifeOS app',
       stage: 'in_use',
       where: 'Signed manifest served by the API.',
-      tested: 'Owner confirmed on S25 release 1004 (2026-11-02)',
+      tested: 'Owner confirmed on the phone, release 1004 (2026-11-02)',
       deployed: 'Releases 1002-1004 signed',
       last_used: '2026-11-02',
       next: 'none',
       completed_at: '2026-11-01 21:50',
       owner_confirmed: 'works',
       owner_confirmed_at: '2026-11-02',
-      proof: 'Owner verified update prompt on S25 (2026-11-02 05:38)',
+      proof: 'Owner verified update prompt on the phone (2026-11-02 05:38)',
       steps: [{ text: 'done', owner: 'you', done: true, done_at: '2026-11-02' }]
     },
     {

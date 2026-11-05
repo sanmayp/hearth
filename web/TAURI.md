@@ -30,9 +30,9 @@ Only one Android build runs at a time.
    `PUBLIC_HEARTH_API_BASE=http://127.0.0.1:8187 cargo tauri android build --debug`.
 3. The key is entered on the Settings page at runtime. It never ships in the APK.
 
-## Install on the S25
+## Install on the phone
 
-The phone is on the tailnet as `sanjays-s25-ultra`. Use USB adb:
+The phone is on the tailnet as `my-phone`. Use USB adb:
 
 `adb install -r web/src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk`
 

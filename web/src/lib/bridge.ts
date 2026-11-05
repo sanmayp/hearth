@@ -3,7 +3,7 @@
 import { API_BASE } from './config';
 import { approvalUnknown, nothingToApprove } from './plain';
 
-/** Default bridge port. Rocky serves the bridge here. */
+/** Default bridge port. The dev computer serves the bridge here. */
 export const BRIDGE_PORT_DEFAULT = '8449';
 /** Max chars the Answer box sends. The bridge allows more. */
 export const BRIDGE_TEXT_MAX = 1000;

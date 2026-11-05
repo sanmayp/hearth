@@ -44,7 +44,7 @@ mod tests {
         assert_eq!(redact("short code abc123 stays"), "short code abc123 stays");
         // Long hostnames mask too. Fail closed: a masked host is
         // noise, a leaked key is a breach.
-        let host = ["sanjay", "home", "tail", "net", "node"].join("");
+        let host = ["testing", "host", "name", "for", "redact"].join("");
         let url = format!("see https://{host}.example:8447/v1 soon");
         let want = "see https://[redacted]:8447/v1 soon";
         assert_eq!(redact(&url), want);
